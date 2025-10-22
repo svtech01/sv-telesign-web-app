@@ -6,7 +6,7 @@ const api_urls = {
   "production": "https://sv-telesign-api.vercel.app/api/"
 }
 
-const ENV = "staging";
+const ENV = "local";
 const API_URL = api_urls[ENV];
 
 export async function POST(req) {

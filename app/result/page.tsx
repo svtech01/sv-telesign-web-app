@@ -83,7 +83,7 @@ export default function ResultsPage() {
     { label: "Uploaded", value: results.uploaded, color: "bg-blue-400" },
     { label: "Sanitized", value: results.sanitized, color: "bg-blue-600" },
     { label: "Telesign Validated", value: results.telesignValidated, color: "bg-green-500" },
-    { label: "Low Risk", value: results.lowRisk, color: "bg-yellow-500" },
+    { label: "Low Risk (High Validity)", value: results.lowRisk, color: "bg-yellow-500" },
   ];
 
   return (
