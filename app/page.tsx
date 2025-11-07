@@ -2,7 +2,7 @@ import ValidationForm from "./components/ValidationForm.jsx";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center" style={{width: '100%'}}>
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center" style={{width: '100%', background: "#dee2e1ff"}}>
       <ValidationForm />
     </main>
   );

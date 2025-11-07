@@ -87,7 +87,7 @@ export default function ResultsPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8">
+    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8" style={{background: "#dee2e1ff"}}>
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Validation Results</h1>
 
       {/* Info Cards Grid */}

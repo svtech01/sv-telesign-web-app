@@ -3,10 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { handleFormSubmit } from "../controllers/file";
+
 export default function ValidationForm() {
 
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [currentTask, setCurrentTask] = useState("Processing...");
   const [formData, setFormData] = useState({
     file: null,
     validation_mode: "real",
@@ -25,36 +28,45 @@ export default function ValidationForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!formData.file) return alert("Please upload a CSV file first.");
 
-    try {
-      
-      setLoading(true);
-      const fd = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        fd.append(key, value);
-      });
+    setLoading(true)
+    const upload = await handleFormSubmit(formData.file);
+    
+    if(!upload?.success) {
+      console.log(upload);
+      alert(upload?.message);
+    }
 
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: fd,
-      });
+    if(upload?.success && upload?.file) {
+      console.log(upload);
+      setCurrentTask("Validating contacts...");
+      try {
+        
+        const validation = await fetch("/api/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...formData, fileUrl: upload?.file }),
+        });
 
-      const data = await res.json();
-      setLoading(false);
+        setCurrentTask("Saving validated contacts...");
 
-      if (data.success) {
-        // Save results to session storage (to read on /results)
-        sessionStorage.setItem("validationResults", JSON.stringify(data));
-        router.push("/result");
-      } else {
-        alert("Validation failed: " + data.error);
+        const result = await validation.json();
+        if (result.success) {
+          // Save results to session storage (to read on /results)
+          sessionStorage.setItem("validationResults", JSON.stringify(result));
+          router.push("/result");
+        } 
+
+      } catch (error) {
+        console.log(error)
+        alert(error)
       }
 
-    } catch (error) {
-      setLoading(false)
-      alert(error)
-    }
+    } 
+
+    setLoading(false)
   };
 
   return (
@@ -172,10 +184,10 @@ export default function ValidationForm() {
     </form>
     {/* Spinner Modal */}
       {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center bg-white justify-center bg-opacity-50 z-50">
           <div className="bg-white rounded-xl p-8 flex flex-col items-center shadow-lg">
             <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-700 font-medium">Processing...</p>
+            <p className="text-gray-700 font-medium">{currentTask}</p>
           </div>
         </div>
       )}

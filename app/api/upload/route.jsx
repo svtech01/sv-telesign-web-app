@@ -1,20 +1,36 @@
 import { NextResponse } from "next/server";
-
-// const api_urls = {
-//   "local": "http://127.0.0.1:5000/api/",
-//   "staging": "https://sv-telesign-api.vercel.app/api/",
-//   "production": "https://sv-telesign-api.vercel.app/api/"
-// }
+import { supabase } from "../../config/supabase";
 
 const API_URL = process.env.API_URL;
 
 export async function POST(req) {
-  const formData = await req.formData();
-  console.log(formData)
-  const res = await fetch(`${API_URL}upload`, {
-    method: "POST",
-    body: formData,
-  });
-  const data = await res.json();
-  return NextResponse.json(data);
+  try {
+    
+    const { fileName } = await req.json();
+
+    if (!fileName) {
+      return NextResponse.json({ error: "Missing fileName" }, { status: 400 });
+    }
+
+    const bucket = "uploads"; // change to your bucket name
+    const filePath = `${Date.now()}-${fileName}`;
+
+    // 1️⃣ Create an *upload URL* valid for 60 seconds
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUploadUrl(filePath);
+
+    if (error) {
+      console.log("Create Signed Error", error);
+      return NextResponse.json(error, { status: 500 });
+    }
+
+    return NextResponse.json({
+      signedUrl: data.signedUrl,
+      path: filePath,
+    });
+
+  } catch (error) {
+    return NextResponse.json(error, { status: 500 });
+  }
 }
