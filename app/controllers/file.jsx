@@ -27,8 +27,9 @@ export const handleFormSubmit = async (file, onError, onSuccess) => {
       body: file,
     });
 
+    console.log("Upload Result: ", uploadRes.json())
+
     if (!uploadRes.ok) {
-      console.log(uploadRes.json())
       return {
         message: "Upload failed: " + (await uploadRes.text()),
         success: false,

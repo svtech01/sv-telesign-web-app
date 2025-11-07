@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "../../config/supabase";
 
-const API_URL = process.env.API_URL;
-
 export async function POST(req) {
   try {
     

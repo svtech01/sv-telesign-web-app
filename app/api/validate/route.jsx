@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { supabase } from "../../config/supabase";
 
 const API_URL = process.env.API_URL;
 
@@ -8,19 +7,7 @@ export async function POST(req) {
   
   const body = await req.json();
 
-  console.log("Getting File Path:", body?.file);
-  
-  // // ✅ Step 3 — Create a downloadable signed URL for processing
-  // const { data, error } = await supabase.storage
-  //     .from("uploads")
-  //     .createSignedUrl(body?.file, 60 * 30); // 30 minutes
-
-  // if (error){
-  //   console.log(error)
-  //   return NextResponse.json(error, { status: 500 });
-  // }
-
-  // const fileUrl =  body?.fileUrl
+  console.log("/api/validate request body", body)
 
   console.log("Got downloadable file name: ", body?.fileUrl)
   

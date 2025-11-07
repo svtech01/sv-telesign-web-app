@@ -40,10 +40,11 @@ export default function ValidationForm() {
     }
 
     if(upload?.success && upload?.file) {
-      console.log(upload);
+      
       setCurrentTask("Validating contacts...");
       try {
         
+        console.log("Submitting file to validate...")
         const validation = await fetch("/api/validate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -57,7 +58,9 @@ export default function ValidationForm() {
           // Save results to session storage (to read on /results)
           sessionStorage.setItem("validationResults", JSON.stringify(result));
           router.push("/result");
-        } 
+        } else {
+          console.log("/api/validate failure result: ", result)
+        }
 
       } catch (error) {
         console.log(error)
