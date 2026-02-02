@@ -10,24 +10,53 @@ export default function ValidationForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [currentTask, setCurrentTask] = useState("Processing...");
-  const [formData, setFormData] = useState({
-    file: null,
-    validation_mode: "real",
-    validation_limit: "all",
-    clear_previous: "true",
-    live_status: "true",
-  });
 
-  const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "file" ? files[0] : value,
-    });
-  };
+  const [file, setFile] = useState(null);
+  const [mode, setMode] = useState("test");
+  const [validation, setValidation] = useState("all");
+  const [clearPrevious, setClearPrevious] = useState(true);
+  const [tickLiveId, setTickLiveId] = useState(false);
+
+  // const [formData, setFormData] = useState({
+  //   file: null,
+  //   validation_mode: "real",
+  //   validation_limit: "all",
+  //   clear_previous: "true",
+  //   live_status: false,
+  // });
+
+  // const handleChange = (e) => {
+  //   const { name, value, type, files } = e.target;
+  //   console.log(type);
+  //   if(type === "checkbox") {
+  //     setFormData({
+  //       ...formData,
+  //       [name]: type === "file" ? files[0] : value,
+  //     });
+  //   }else if(type === "file") {
+  //     setFormData({
+  //       ...formData,
+  //       [name]: files[0]
+  //     });
+  //   }else{
+  //     setFormData({
+  //       ...formData,
+  //       [name]: value,
+  //     });
+  //   }
+    
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const formData = {
+      file: file,
+      validation_mode: mode,
+      validation_limit: validation,
+      clear_previous: clearPrevious,
+      live_status: tickLiveId,
+    }
 
     if (!formData.file) return alert("Please upload a CSV file first.");
 
@@ -91,7 +120,7 @@ export default function ValidationForm() {
           type="file"
           name="file"
           accept=".csv"
-          onChange={handleChange}
+          onChange={(e) => setFile(e.target.files[0])}
           className="w-full border border-gray-300 p-2 rounded-lg text-black"
           required
         />
@@ -104,12 +133,12 @@ export default function ValidationForm() {
         </label>
         <select
           name="validation_mode"
-          value={formData.validation_mode}
-          onChange={handleChange}
+          value={mode}
+          onChange={(e) => setMode(e.target.value)}
           className="w-full border border-gray-300 p-2 rounded-lg text-black" 
         >
           <option value="real">Real API</option>
-          <option value="test" disabled>Test Mode</option>
+          <option value="test">Test Mode</option>
         </select>
       </div>
 
@@ -120,8 +149,8 @@ export default function ValidationForm() {
         </label>
         <select
           name="validation_limit"
-          value={formData.validation_limit}
-          onChange={handleChange}
+          value={validation}
+          onChange={(e) => setValidation(e.target.value)}
           className="w-full border border-gray-300 p-2 rounded-lg text-black"
         >
           <option value="all">Validate all contacts</option>
@@ -141,9 +170,9 @@ export default function ValidationForm() {
             <input
               type="radio"
               name="clear_previous"
-              value="true"
-              checked={formData.clear_previous === "true"}
-              onChange={handleChange}
+              value={true}
+              checked={clearPrevious === true}
+              onChange={(e) => setClearPrevious(e.target.value)}
             />
             Start Fresh
           </label>
@@ -151,9 +180,9 @@ export default function ValidationForm() {
             <input
               type="radio"
               name="dataHandling"
-              value="false"
-              checked={formData.clear_previous === "false"}
-              onChange={handleChange}
+              value={false}
+              checked={clearPrevious === true}
+              onChange={(e) => setClearPrevious(e.target.value)}
               disabled={true}
             />
             Append
@@ -168,11 +197,10 @@ export default function ValidationForm() {
         </label>
         <label className="flex items-center gap-2 text-black">
           <input
-            type="radio"
+            type="checkbox"
             name="live_status"
-            value="true"
-            checked={formData.live_status === "true"}
-            onChange={handleChange}
+            checked={tickLiveId}
+            onChange={() => setTickLiveId(!tickLiveId)}
           />
           Check Live Status
         </label>
