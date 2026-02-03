@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 /* ---------------- Constants ---------------- */
 
@@ -19,12 +19,25 @@ const MOCK_DATA: Record<string, any> = {
   week4: { uploads: 0, validations: 0, existing: 0 },
 };
 
+const CREDITS_DATA = {
+  hasEnoughCredits:true, 
+  consumed:{
+    standard:0,withLive:0
+  },
+  remaining:{
+    standard:0,withLive:0
+  },
+  cap:{
+    standardMax:0,withLiveMax:0
+  }
+}
+
 /* ---------------- Page ---------------- */
 
 export default function TelesignDashboardPage() {
 
   const [week, setWeek] = useState("week1");
-
+  const [credits, setCredits] = useState(CREDITS_DATA);
   const [contacts, setContacts] = useState(0);
 
   const [phoneIdTrans, setPhoneIdTrans] = useState(0);
@@ -52,12 +65,116 @@ export default function TelesignDashboardPage() {
   const phoneIdLiveTotal = phoneIdLiveTrans * phoneIdLiveRate;
   const grandTotal = phoneIdTotal + phoneIdLiveTotal;
 
+  useEffect(() => {
+    const fetchCredits = async () => {
+      const res = await fetch("/api/credits");
+      const data = await res.json();
+      setCredits(data);
+    }
+    fetchCredits();
+  }, [])
+
   return (
     <div className="bg-white text-gray-800">
       <div className="p-8 max-w-7xl mx-auto bg-white" style={{ width: '100%' }}>
         <h1 className="text-3xl font-bold mb-8">
           📊 Telesign API Transactions Dashboard
         </h1>
+
+        <div className="mt-10 mb-20">
+          <div className="flex justify-start">
+            <div className="text-left space-y-2 flex-3">
+              <p className="text-sm font-semibold text-muted-foreground">
+                Credits Remaining:
+              </p>
+
+              <div className="flex items-center justify-start gap-2">
+                <span className="text-sm">Standard</span>
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  {credits && credits?.remaining?.standard || ''} / {credits && credits?.cap?.standardMax || ''}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-start gap-2">
+                <span className="text-sm">With Live ID</span>
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  {credits && credits?.remaining?.withLive || ''} / {credits && credits?.cap?.withLiveMax || ''}
+                </span>
+              </div>
+
+            </div>
+            <div className="flex-3">
+              <p className="text-sm font-semibold text-muted-foreground">
+                Credits Used:
+              </p>
+
+              <div className="flex items-center justify-start gap-2">
+                <span className="text-sm">Standard</span>
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  {credits && credits?.consumed?.standard || ''} / {credits && credits?.cap?.standardMax || ''}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-start gap-2">
+                <span className="text-sm">With Live ID</span>
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  {credits && credits?.consumed?.withLive || 0} / {credits && credits?.cap?.withLiveMax || ''}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-3">
+              <p className="text-sm font-semibold text-muted-foreground">
+                Billing:
+              </p>
+
+              <div className="flex items-center justify-start gap-2">
+                <span className="text-sm">Standard</span>
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  {credits && credits?.consumed?.standard || ''} = ${credits && credits?.consumed?.standard * phoneIdRate}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-start gap-2">
+                <span className="text-sm">With Live ID</span>
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  {credits && credits?.consumed?.withLive || 0} = ${credits && credits?.consumed?.withLive * phoneIdLiveRate}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-3">
+              <p className="text-sm font-semibold text-muted-foreground">
+                Hard Cap:
+              </p>
+
+              <div className="flex items-center justify-start gap-2">
+                <span className="text-sm">Standard</span>
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  {credits && credits?.cap?.standardMax || ''}
+                </span>
+                -
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  ${Math.round(credits && credits?.cap?.standardMax * phoneIdRate)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-start gap-2">
+                <span className="text-sm">With Live ID</span>
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  {credits && credits?.cap?.withLiveMax || ''}
+                </span>
+                -
+                <span className="badge bg-gray-100 text-black px-2 py-1 rounded-md">
+                  ${Math.round(credits && credits?.cap?.withLiveMax * phoneIdLiveRate)}
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
 
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -196,7 +313,7 @@ function CalculatorInput({
         type="text"
         value={value}
         disabled={disabled}
-       onChange={e => onChange?.(Number(e.target.value))}
+        onChange={e => onChange?.(Number(e.target.value))}
         className="w-full border rounded-lg p-2"
       />
     </div>

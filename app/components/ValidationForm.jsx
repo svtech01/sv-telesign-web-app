@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { handleFormSubmit } from "../controllers/file";
@@ -17,35 +17,7 @@ export default function ValidationForm() {
   const [clearPrevious, setClearPrevious] = useState(true);
   const [tickLiveId, setTickLiveId] = useState(false);
 
-  // const [formData, setFormData] = useState({
-  //   file: null,
-  //   validation_mode: "real",
-  //   validation_limit: "all",
-  //   clear_previous: "true",
-  //   live_status: false,
-  // });
-
-  // const handleChange = (e) => {
-  //   const { name, value, type, files } = e.target;
-  //   console.log(type);
-  //   if(type === "checkbox") {
-  //     setFormData({
-  //       ...formData,
-  //       [name]: type === "file" ? files[0] : value,
-  //     });
-  //   }else if(type === "file") {
-  //     setFormData({
-  //       ...formData,
-  //       [name]: files[0]
-  //     });
-  //   }else{
-  //     setFormData({
-  //       ...formData,
-  //       [name]: value,
-  //     });
-  //   }
-    
-  // };
+  const [credits, setCredits] = useState({});
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,17 +34,17 @@ export default function ValidationForm() {
 
     setLoading(true)
     const upload = await handleFormSubmit(formData.file);
-    
-    if(!upload?.success) {
+
+    if (!upload?.success) {
       console.log(upload);
       alert(upload?.message);
     }
 
-    if(upload?.success && upload?.file) {
-      
+    if (upload?.success && upload?.file) {
+
       setCurrentTask("Validating contacts...");
       try {
-        
+
         console.log("Submitting file to validate...")
         const validation = await fetch("/api/validate", {
           method: "POST",
@@ -96,124 +68,155 @@ export default function ValidationForm() {
         alert(error)
       }
 
-    } 
+    }
 
     setLoading(false)
   };
 
+  useEffect(() => {
+    const fetchCredits = async () => {
+      const res = await fetch("/api/credits");
+      const data = await res.json();
+      setCredits(data);
+    }
+    fetchCredits();
+  }, [])
+
   return (
     <>
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-lgx mx-auto mt-10 p-6 bg-white shadow-md rounded-xl space-y-6 text-dark w-100"
-    >
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">
-        Unified Phone Intelligence Platform
-      </h2>
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-lgx mx-auto mt-10 p-6 bg-white shadow-md rounded-xl space-y-6 text-dark w-100"
+      >
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Unified Phone Intelligence Platform
+        </h2>
 
-      {/* Seamless AI CSV File */}
-      <div>
-        <label className="block font-medium text-gray-700 mb-2">
-          Seamless AI CSV File
-        </label>
-        <input
-          type="file"
-          name="file"
-          accept=".csv"
-          onChange={(e) => setFile(e.target.files[0])}
-          className="w-full border border-gray-300 p-2 rounded-lg text-black"
-          required
-        />
-      </div>
+        <div className="flex justify-end text-black">
 
-      {/* Validation Mode */}
-      <div>
-        <label className="block font-medium text-gray-700 mb-2">
-          Validation Mode
-        </label>
-        <select
-          name="validation_mode"
-          value={mode}
-          onChange={(e) => setMode(e.target.value)}
-          className="w-full border border-gray-300 p-2 rounded-lg text-black" 
-        >
-          <option value="real">Real API</option>
-          <option value="test">Test Mode</option>
-        </select>
-      </div>
+          <div className="text-left space-y-2">
+            <p className="text-sm font-semibold text-muted-foreground">
+              Credits Remaining:
+            </p>
 
-      {/* Validation Limit */}
-      <div>
-        <label className="block font-medium text-gray-700 mb-2">
-          Validation Limit
-        </label>
-        <select
-          name="validation_limit"
-          value={validation}
-          onChange={(e) => setValidation(e.target.value)}
-          className="w-full border border-gray-300 p-2 rounded-lg text-black"
-        >
-          <option value="all">Validate all contacts</option>
-          <option value="100" disabled>
-            Validate first 100 contacts
-          </option>
-        </select>
-      </div>
+            <div className="flex items-center justify-start gap-2">
+              <span className="text-sm">Standard:</span>
+              <span className="badge bg-blue-100 text-black px-2 py-1 rounded-md">
+                {credits && credits?.remaining?.standard || ''} / {credits && credits?.cap?.standardMax || ''}
+              </span>
+              -
+              <span className="text-sm">Live Status:</span>
+              <span className="badge bg-orange-100 text-black px-2 py-1 rounded-md">
+                {credits && credits?.remaining?.withLive || ''} / {credits && credits?.cap?.withLiveMax || ''}
+              </span>
+            </div>
+          </div>
+        </div>
 
-      {/* Data Handling */}
-      <div>
-        <label className="block font-medium text-gray-700 mb-2 ">
-          Data Handling
-        </label>
-        <div className="space-y-1">
+        {/* Seamless AI CSV File */}
+        <div>
+          <label className="block font-medium text-gray-700 mb-2">
+            Seamless AI CSV File
+          </label>
+          <input
+            type="file"
+            name="file"
+            accept=".csv"
+            onChange={(e) => setFile(e.target.files[0])}
+            className="w-full border border-gray-300 p-2 rounded-lg text-black"
+            required
+          />
+        </div>
+
+        {/* Validation Mode */}
+        <div>
+          <label className="block font-medium text-gray-700 mb-2">
+            Validation Mode
+          </label>
+          <select
+            name="validation_mode"
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded-lg text-black"
+          >
+            <option value="real">Real API</option>
+            <option value="test">Test Mode</option>
+          </select>
+        </div>
+
+        {/* Validation Limit */}
+        <div>
+          <label className="block font-medium text-gray-700 mb-2">
+            Validation Limit
+          </label>
+          <select
+            name="validation_limit"
+            value={validation}
+            onChange={(e) => setValidation(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded-lg text-black"
+          >
+            <option value="all">Validate all contacts</option>
+            <option value="100" disabled>
+              Validate first 100 contacts
+            </option>
+          </select>
+        </div>
+
+        {/* Data Handling */}
+        <div>
+          <label className="block font-medium text-gray-700 mb-2 ">
+            Data Handling
+          </label>
+          <div className="space-y-1">
+            <label className="flex items-center gap-2 text-black">
+              <input
+                type="radio"
+                name="clear_previous"
+                value={true}
+                checked={clearPrevious === true}
+                onChange={(e) => setClearPrevious(e.target.value)}
+              />
+              Start Fresh
+            </label>
+            <label className="flex items-center gap-2  text-black">
+              <input
+                type="radio"
+                name="dataHandling"
+                value={false}
+                checked={clearPrevious === true}
+                onChange={(e) => setClearPrevious(e.target.value)}
+                disabled={true}
+              />
+              Append
+            </label>
+          </div>
+        </div>
+
+        {/* Phone ID Live Status */}
+        <div>
+          <label className="block font-medium text-gray-700 mb-2">
+            Phone ID Live Status
+          </label>
           <label className="flex items-center gap-2 text-black">
             <input
-              type="radio"
-              name="clear_previous"
-              value={true}
-              checked={clearPrevious === true}
-              onChange={(e) => setClearPrevious(e.target.value)}
+              type="checkbox"
+              name="live_status"
+              checked={tickLiveId}
+              onChange={() => setTickLiveId(!tickLiveId)}
             />
-            Start Fresh
-          </label>
-          <label className="flex items-center gap-2  text-black">
-            <input
-              type="radio"
-              name="dataHandling"
-              value={false}
-              checked={clearPrevious === true}
-              onChange={(e) => setClearPrevious(e.target.value)}
-              disabled={true}
-            />
-            Append
+            Check Live Status
           </label>
         </div>
-      </div>
 
-      {/* Phone ID Live Status */}
-      <div>
-        <label className="block font-medium text-gray-700 mb-2">
-          Phone ID Live Status
-        </label>
-        <label className="flex items-center gap-2 text-black">
-          <input
-            type="checkbox"
-            name="live_status"
-            checked={tickLiveId}
-            onChange={() => setTickLiveId(!tickLiveId)}
-          />
-          Check Live Status
-        </label>
-      </div>
-
-      <button
-        type="submit"
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-      >
-        Process Complete Workflow
-      </button>
-    </form>
-    {/* Spinner Modal */}
+        <button
+          type="submit"
+          disabled={credits && !credits.hasEnoughCredits}
+          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          Process Complete Workflow
+        </button>
+      </form>
+      {/* Spinner Modal */}
       {loading && (
         <div className="fixed inset-0 flex items-center bg-white justify-center bg-opacity-50 z-50">
           <div className="bg-white rounded-xl p-8 flex flex-col items-center shadow-lg">
